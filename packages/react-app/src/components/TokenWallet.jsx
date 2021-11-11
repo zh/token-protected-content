@@ -69,7 +69,10 @@ export default function TokenWallet(props) {
     try {
       const tx = Transactor(provider, props.gasPrice);
       const contractFunction = contract.connect(props.signer)["transfer"];
-      const result = await tx(contractFunction(toAddress, value));
+      const overrides = {
+        gasPrice: props.gasPrice,
+      };
+      const result = await tx(contractFunction(toAddress, value, overrides));
 
       if (DEBUG) console.log("SEND TKN: ", result);
     } catch (e) {

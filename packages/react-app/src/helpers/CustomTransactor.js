@@ -22,6 +22,8 @@ export default function CustomTransactor(providerOrSigner, gasPrice = GAS_PRICE)
         network = await providerOrSigner.getNetwork();
       }
 
+      // console.log("network: ", network);
+
       try {
         let result;
         if (tx instanceof Promise) {

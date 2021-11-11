@@ -52,7 +52,7 @@ const DEBUG = false;
 const tokenName = "ContentViewToken";
 const coinName = targetNetwork.coin || "BCH";
 const ownerAddress = "0x81585790aA977b64e0c452DB84FC69eaCE951d4F";
-const viewThreshold = 50; // how many tokens you need to see the content
+const viewThreshold = 100; // how many tokens you need to see the content
 
 // 🛰 providers
 // 🏠 Your local provider is usually pointed at your local blockchain
@@ -254,7 +254,7 @@ function App(props) {
               loading={withdrawing}
               onClick={async () => {
                 setWithdrawing(true);
-                await tx(writeContracts.Vendor.withdraw(parseEther("" + ethWithdrawAmount)));
+                await tx(writeContracts.Vendor.withdraw(parseEther("" + ethWithdrawAmount), { gasPrice: gasPrice }));
                 setWithdrawing(false);
               }}
             >
@@ -291,7 +291,7 @@ function App(props) {
           contracts={readContracts}
         />
       </div>
-      {yourTokenBalance && yourTokenBalance.gt(viewThreshold) ?(
+      {yourTokenBalance && yourTokenBalance.gt(viewThreshold) ? (
         <div style={{ marginTop: 60 }}>
           <Vimeo video="610454670" showTitle={false} />
         </div>
@@ -329,7 +329,12 @@ function App(props) {
                 loading={buying}
                 onClick={async () => {
                   setBuying(true);
-                  await tx(writeContracts.Vendor.buyTokens({ value: ethCostToPurchaseTokens }));
+                  await tx(
+                    writeContracts.Vendor.buyTokens({
+                      value: ethCostToPurchaseTokens,
+                      gasPrice: gasPrice,
+                    }),
+                  );
                   setBuying(false);
                 }}
               >
@@ -436,7 +441,12 @@ function App(props) {
                       loading={buying}
                       onClick={async () => {
                         setBuying(true);
-                        await tx(writeContracts.Vendor.buyTokens({ value: ethCostToPurchaseTokens }));
+                        await tx(
+                          writeContracts.Vendor.buyTokens({
+                            value: ethCostToPurchaseTokens,
+                            gasPrice: gasPrice,
+                          }),
+                        );
                         setBuying(false);
                       }}
                     >

@@ -24,7 +24,7 @@ export default function AddTokenLogo(props) {
   return (
     <div>
       <a href="#" onClick={() => addLogo()}>
-      Add to metamask 🦊
+        Add to metamask 🦊
       </a>
     </div>
   );
