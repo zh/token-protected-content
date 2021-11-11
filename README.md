@@ -2,10 +2,12 @@
 
 > make content available only for token holders
 
+[![Add to Homescreen](https://img.shields.io/badge/Skynet-Add%20To%20Homescreen-00c65e?logo=skynet&labelColor=0d0d0d)](https://homescreen.hns.siasky.net/#/skylink/)
+
 The application is deployed to:
 
-* [Avalanche Fuji testnet](https://fuji-content.surge.sh/)
-* [SmartBCH Amber testnet](https://token-protect.surge.sh/)
+- [Avalanche Fuji testnet](https://fuji-content.surge.sh/)
+- [SmartBCH Amber testnet](https://token-protect.surge.sh/)
 
 ## Quick Start
 
