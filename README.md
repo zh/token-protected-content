@@ -2,7 +2,7 @@
 
 > make content available only for token holders
 
-# Quick Start
+## Quick Start
 
 Prerequisites: [Node](https://nodejs.org/en/download/) plus [Yarn](https://classic.yarnpkg.com/en/docs/install/) and [Git](https://git-scm.com/downloads)
 
@@ -44,7 +44,7 @@ yarn deploy --network testnetSmartBCH
 yarn deploy --network testnetFantom
 ```
 
-Edit your token smart contract `MediaToken.sol` in `packages/hardhat/contracts`
+Edit your token smart contract `ContentViewToken.sol` in `packages/hardhat/contracts`
 
 Edit your deployment scripts in `packages/hardhat/deploy`
 
