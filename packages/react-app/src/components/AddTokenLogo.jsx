@@ -1,11 +1,6 @@
-import React, { useState } from "react";
-import { Input, Row, Col } from "antd";
+import React from "react";
 
-// const { utils } = require("ethers");
-
-export default function Balance(props) {
-  const [url, setUrl] = useState("");
-
+export default function AddTokenLogo(props) {
   const addLogo = async () => {
     const { contract } = props;
     const methodParams = {
@@ -14,7 +9,7 @@ export default function Balance(props) {
         address: contract.address,
         symbol: await contract.symbol(),
         decimals: await contract.decimals(),
-        image: url,
+        image: "https://zh.thedev.id/sep20tokens/assets/eye.png",
       },
     };
     web3.currentProvider.sendAsync(
@@ -24,47 +19,13 @@ export default function Balance(props) {
       },
       console.log,
     );
-    console.log(props.provider);
-  };
-
-  const handleChange = e => {
-    const { value } = e.target;
-    if (value !== "") {
-      setUrl(value);
-    }
   };
 
   return (
     <div>
-      <Row>
-        <Col
-          span={8}
-          style={{
-            textAlign: "right",
-            opacity: 0.333,
-            paddingRight: 6,
-            fontSize: 24,
-          }}
-        >
-          Token Logo URL
-        </Col>
-        <Col span={14}>
-          <Input
-            size="large"
-            placeholder={"http://..."}
-            autoComplete="off"
-            onChange={handleChange}
-            onPressEnter={() => addLogo()}
-          />
-        </Col>
-        <Col span={2}>
-          <h2>
-            <a href="#" onClick={() => addLogo()}>
-              🦊
-            </a>
-          </h2>
-        </Col>
-      </Row>
+      <a href="#" onClick={() => addLogo()}>
+      Add to metamask 🦊
+      </a>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { Transactor } from "../helpers";
 import AddressInput from "./AddressInput";
 import EtherInput from "./EtherInput";
 import TokenBalance from "./TokenBalance";
-import { useTokenList } from "../hooks";
+import AddTokenLogo from "./AddTokenLogo";
 
 import { utils } from "ethers";
 
@@ -44,7 +44,7 @@ import { utils } from "ethers";
 */
 
 const DEBUG = true;
-const logoURI = "https://via.placeholder.com/32.png";
+const logoURI = "https://zh.thedev.id/sep20tokens/assets/eye.png";
 
 export default function TokenWallet(props) {
   const { name, provider, chainId } = props;
@@ -52,7 +52,6 @@ export default function TokenWallet(props) {
   const [amount, setAmount] = useState();
   const [toAddress, setToAddress] = useState();
 
-  const tokenList = useTokenList();
   const contracts = useContractLoader(provider, { chainId });
   const contract = contracts && contracts[name] ? contracts[name] : null;
 
@@ -84,11 +83,12 @@ export default function TokenWallet(props) {
         <div>
           <TokenBalance
             name={name}
-            img={"💰"}
+            img={"👁️"}
             suffix={"tokens"}
             address={props.address}
             contracts={props.readContracts}
           />
+          <AddTokenLogo contract={contract} />
         </div>
         <div>
           {props.address && props.showQR && (

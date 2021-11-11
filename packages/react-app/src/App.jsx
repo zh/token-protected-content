@@ -1,10 +1,11 @@
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { useThemeSwitcher } from "react-css-theme-switcher";
-import { Button, Card, Col, Divider, Input, List, Menu, Row } from "antd";
+import { Alert, Button, Card, Col, Divider, Input, Menu, Row } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
 import { HashRouter, Link, Route, Switch } from "react-router-dom";
 import Web3Modal from "web3modal";
+import Vimeo from "@u-wave/react-vimeo";
 import "./App.css";
 import {
   Account,
@@ -14,20 +15,12 @@ import {
   Faucet,
   Header,
   NetworkSelect,
-  Ramp,
   ThemeSwitch,
   TokenBalance,
   TokenWallet,
 } from "./components";
-import { GAS_PRICE, FIAT_PRICE, INFURA_ID, NETWORKS } from "./constants";
-import {
-  useBalance,
-  useContractLoader,
-  useContractReader,
-  useEventListener,
-  useUserSigner,
-  useExchangePrice,
-} from "./hooks";
+import { GAS_PRICE, INFURA_ID, NETWORKS } from "./constants";
+import { useBalance, useContractLoader, useContractReader, useUserSigner } from "./hooks";
 import { Transactor } from "./helpers";
 import { formatEther, parseEther } from "@ethersproject/units";
 
@@ -39,8 +32,8 @@ const { ethers } = require("ethers");
 */
 
 // 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS.localhost;
-// const targetNetwork = NETWORKS.testnetSmartBCH;
+// const targetNetwork = NETWORKS.localhost;
+const targetNetwork = NETWORKS.testnetSmartBCH;
 // const targetNetwork = NETWORKS.mainnetSmartBCH;
 // const targetNetwork = NETWORKS.fujiAvalanche;
 // const targetNetwork = NETWORKS.mainnetAvalanche;
@@ -59,6 +52,7 @@ const DEBUG = false;
 const tokenName = "ContentViewToken";
 const coinName = targetNetwork.coin || "BCH";
 const ownerAddress = "0x81585790aA977b64e0c452DB84FC69eaCE951d4F";
+const viewThreshold = 50; // how many tokens you need to see the content
 
 // 🛰 providers
 // 🏠 Your local provider is usually pointed at your local blockchain
@@ -113,8 +107,8 @@ function App(props) {
     }, 1);
   };
 
-  /* 💵 This hook will get the price in fiat */
-  const price = FIAT_PRICE ? useExchangePrice(targetNetwork) : 0;
+  /* Do not show price in fiat */
+  const price = 0;
 
   const gasPrice = targetNetwork.gasPrice || GAS_PRICE;
   // if (DEBUG) console.log("⛽️ Gas price:", gasPrice);
@@ -162,7 +156,7 @@ function App(props) {
   if (DEBUG) console.log("🏵 vendorTokenBalance:", vendorTokenBalance ? formatEther(vendorTokenBalance) : "...");
 
   const yourTokenBalance = useContractReader(readContracts, tokenName, "balanceOf", [address]);
-  if (DEBUG) console.log("🏵 yourTokenBalance:", yourTokenBalance ? formatEther(yourTokenBalance) : "...");
+  console.log("🏵 yourTokenBalance:", yourTokenBalance ? formatEther(yourTokenBalance) : "...");
 
   const tokensPerEth = useContractReader(readContracts, "Vendor", "tokensPerETH");
   if (DEBUG) console.log("🏦 tokensPerEth:", tokensPerEth ? tokensPerEth.toString() : "...");
@@ -284,6 +278,70 @@ function App(props) {
     </>
   );
 
+  const privateContent = (
+    <>
+      <div style={{ padding: 4, marginTop: 24, width: 480, margin: "auto" }}>
+        Balance:
+        <TokenBalance
+          name={tokenName}
+          img={"👁️"}
+          suffix={"CVT"}
+          fontSize={16}
+          address={address}
+          contracts={readContracts}
+        />
+      </div>
+      {yourTokenBalance && yourTokenBalance.gt(viewThreshold) ?(
+        <div style={{ marginTop: 60 }}>
+          <Vimeo video="610454670" showTitle={false} />
+        </div>
+      ) : (
+        <div style={{ padding: 4, marginTop: 24, width: 480, margin: "auto" }}>
+          <Alert
+            message="Content unavailable"
+            description={
+              <div>
+                You need <b>{viewThreshold} CVT</b> to see the private content.
+              </div>
+            }
+            type="error"
+            closable={false}
+          />
+          <Card>
+            <div style={{ padding: 4 }}>
+              {tokensPerEth && tokensPerEth.toNumber()} tokens per {coinName}
+            </div>
+            <div style={{ padding: 4 }}>
+              <Input
+                style={{ textAlign: "center" }}
+                placeholder={"amount of tokens to buy"}
+                value={tokenBuyAmount}
+                onChange={e => {
+                  setTokenBuyAmount(e.target.value);
+                }}
+              />
+              <Balance balance={ethCostToPurchaseTokens} dollarMultiplier={price} size={16} />
+            </div>
+
+            <div style={{ padding: 8 }}>
+              <Button
+                type={"primary"}
+                loading={buying}
+                onClick={async () => {
+                  setBuying(true);
+                  await tx(writeContracts.Vendor.buyTokens({ value: ethCostToPurchaseTokens }));
+                  setBuying(false);
+                }}
+              >
+                Buy Tokens
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="App">
       {/* ✏️ Edit the header and change the title to your project name */}
@@ -298,9 +356,21 @@ function App(props) {
               }}
               to="/"
             >
-              Tokens ATM
+              Content
             </Link>
           </Menu.Item>
+          {yourTokenBalance && yourTokenBalance.gt(viewThreshold) && (
+            <Menu.Item key="/token">
+              <Link
+                onClick={() => {
+                  setRoute("/token");
+                }}
+                to="/token"
+              >
+                Tokens
+              </Link>
+            </Menu.Item>
+          )}
           {address && address === ownerAddress && (
             <>
               <Menu.Item key="/owner">
@@ -328,60 +398,80 @@ function App(props) {
         </Menu>
         <Switch>
           <Route exact path="/">
-            <div style={{ padding: 8, marginTop: 32, width: 480, margin: "auto" }}>
-              <Card title="Buy 👁️ Tokens">
-                <div style={{ padding: 8 }}>
-                  {tokensPerEth && tokensPerEth.toNumber()} tokens per {coinName}
-                </div>
-                <div style={{ padding: 8 }}>
-                  <Input
-                    style={{ textAlign: "center" }}
-                    placeholder={"amount of tokens to buy"}
-                    value={tokenBuyAmount}
-                    onChange={e => {
-                      setTokenBuyAmount(e.target.value);
-                    }}
-                  />
-                  <Balance balance={ethCostToPurchaseTokens} dollarMultiplier={price} />
-                </div>
-
-                <div style={{ padding: 8 }}>
-                  <Button
-                    type={"primary"}
-                    loading={buying}
-                    onClick={async () => {
-                      setBuying(true);
-                      await tx(writeContracts.Vendor.buyTokens({ value: ethCostToPurchaseTokens }));
-                      setBuying(false);
-                    }}
-                  >
-                    Buy Tokens
-                  </Button>
-                </div>
-              </Card>
-            </div>
+            {privateContent}
           </Route>
-          <Route path="/owner">{ownerDisplay}</Route>
-          <Route path="/debug">
-            <Contract
-              name={"Vendor"}
-              address={address}
-              signer={userSigner}
-              provider={localProvider}
-              blockExplorer={blockExplorer}
-              gasPrice={gasPrice}
-              chainId={localChainId}
-            />
-            <Contract
-              name={tokenName}
-              address={address}
-              signer={userSigner}
-              provider={localProvider}
-              blockExplorer={blockExplorer}
-              gasPrice={gasPrice}
-              chainId={localChainId}
-            />
-          </Route>
+          {yourTokenBalance && yourTokenBalance.gt(viewThreshold) && (
+            <Route exact path="/token">
+              <div style={{ padding: 4, marginTop: 24, width: 480, margin: "auto" }}>
+                <TokenWallet
+                  name={tokenName}
+                  address={address}
+                  showQR={true}
+                  signer={userSigner}
+                  provider={localProvider}
+                  readContracts={readContracts}
+                  gasPrice={gasPrice}
+                  chainId={localChainId}
+                />
+              </div>
+              <div style={{ padding: 4, marginTop: 24, width: 480, margin: "auto" }}>
+                <Card>
+                  <div style={{ padding: 4 }}>
+                    {tokensPerEth && tokensPerEth.toNumber()} tokens per {coinName}
+                  </div>
+                  <div style={{ padding: 4 }}>
+                    <Input
+                      style={{ textAlign: "center" }}
+                      placeholder={"amount of tokens to buy"}
+                      value={tokenBuyAmount}
+                      onChange={e => {
+                        setTokenBuyAmount(e.target.value);
+                      }}
+                    />
+                    <Balance balance={ethCostToPurchaseTokens} dollarMultiplier={price} />
+                  </div>
+                  <div style={{ padding: 4 }}>
+                    <Button
+                      type={"primary"}
+                      loading={buying}
+                      onClick={async () => {
+                        setBuying(true);
+                        await tx(writeContracts.Vendor.buyTokens({ value: ethCostToPurchaseTokens }));
+                        setBuying(false);
+                      }}
+                    >
+                      Buy Tokens
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            </Route>
+          )}
+          {address && address === ownerAddress && (
+            <>
+              <Route path="/owner">{ownerDisplay}</Route>
+              <Route path="/debug">
+                <Contract
+                  name={"Vendor"}
+                  address={address}
+                  signer={userSigner}
+                  provider={localProvider}
+                  blockExplorer={blockExplorer}
+                  gasPrice={gasPrice}
+                  chainId={localChainId}
+                />
+                <Contract
+                  name={tokenName}
+                  address={address}
+                  signer={userSigner}
+                  provider={localProvider}
+                  blockExplorer={blockExplorer}
+                  gasPrice={gasPrice}
+                  chainId={localChainId}
+                />
+              </Route>
+            </>
+          )}
         </Switch>
       </HashRouter>
 
@@ -395,31 +485,15 @@ function App(props) {
           userSigner={userSigner}
           price={price}
           coin={coinName}
-          showWallet={false}
           web3Modal={web3Modal}
           loadWeb3Modal={loadWeb3Modal}
           logoutOfWeb3Modal={logoutOfWeb3Modal}
           blockExplorer={blockExplorer}
         />
-        <TokenBalance
-          name={tokenName}
-          img={"👁️"}
-          suffix={"CVT"}
-          fontSize={24}
-          address={address}
-          contracts={readContracts}
-        />
       </div>
 
       {/* 🗺 Extra UI like gas price, eth price, faucet, and support: */}
       <div style={{ position: "fixed", textAlign: "left", left: 0, bottom: 20, padding: 10 }}>
-        {FIAT_PRICE && (
-          <Row align="middle" gutter={[4, 4]}>
-            <Col span={8}>
-              <Ramp price={price} address={address} networks={NETWORKS} />
-            </Col>
-          </Row>
-        )}
         <Row align="middle" gutter={[4, 4]}>
           <Col span={24}>
             {

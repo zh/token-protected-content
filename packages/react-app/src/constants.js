@@ -1,5 +1,6 @@
 require("dotenv").config();
 
+export const AUTH_SERVER = "http://localhost:49832";
 export const IPFS_GATEWAY = "https://ipfs.io/ipfs/";
 export const INFURA_ID = process.env.REACT_APP_INFURA_KEY;
 export const ETHERSCAN_KEY = process.env.REACT_APP_ETHERSCAN_KEY;
