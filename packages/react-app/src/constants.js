@@ -7,6 +7,7 @@ export const ETHERSCAN_KEY = process.env.REACT_APP_ETHERSCAN_KEY;
 // BLOCKNATIVE ID FOR Notify.js:
 export const BLOCKNATIVE_DAPPID = "0b58206a-f3c0-4701-a62f-73c7243e8c77";
 export const FIAT_PRICE = process.env.REACT_APP_FIAT_PRICE === "NO";
+export const GAS_PRICE = 1000000000; // fix this for your network
 
 export const NETWORKS = {
   localhost: {
@@ -191,5 +192,3 @@ export const NETWORK = chainId => {
     }
   }
 };
-
-export const GAS_PRICE = 1000000000; // fix this for your network

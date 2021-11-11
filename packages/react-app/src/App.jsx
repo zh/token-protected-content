@@ -156,7 +156,7 @@ function App(props) {
   if (DEBUG) console.log("🏵 vendorTokenBalance:", vendorTokenBalance ? formatEther(vendorTokenBalance) : "...");
 
   const yourTokenBalance = useContractReader(readContracts, tokenName, "balanceOf", [address]);
-  console.log("🏵 yourTokenBalance:", yourTokenBalance ? formatEther(yourTokenBalance) : "...");
+  if (DEBUG) console.log("🏵 yourTokenBalance:", yourTokenBalance ? formatEther(yourTokenBalance) : "...");
 
   const tokensPerEth = useContractReader(readContracts, "Vendor", "tokensPerETH");
   if (DEBUG) console.log("🏦 tokensPerEth:", tokensPerEth ? tokensPerEth.toString() : "...");
